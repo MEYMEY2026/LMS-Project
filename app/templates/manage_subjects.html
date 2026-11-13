@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">➕ បង្កើតមុខវិជ្ជាថ្មី</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ឈ្មោះមុខវិជ្ជា</label>
+                        <input type="text" name="name" class="form-control" required placeholder="ឧ. គណិតវិទ្យា">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">កូដមុខវិជ្ជា</label>
+                        <input type="text" name="code" class="form-control" required placeholder="ឧ. MATH01">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">រក្សាទុក</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">📚 បញ្ជីមុខវិជ្ជាដែលមានស្រាប់</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>កូដ</th>
+                            <th>ឈ្មោះមុខវិជ្ជា</th>
+                            <th>ចំនួនសំណួរ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in subjects %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ sub.code }}</span></td>
+                            <td>{{ sub.name }}</td>
+                            <td>{{ sub.questions.count }} សំណួរ</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-3">មិនទាន់មានមុខវិជ្ជាទេ។</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

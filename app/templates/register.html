@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow border-0" style="border-radius: 20px;">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="Logo" style="height: 80px; border-radius: 15px;" class="mb-3">
+                    {% else %}
+                        <i class="bi bi-person-plus-fill text-success" style="font-size: 3.5rem;"></i>
+                    {% endif %}
+                    <h3 class="fw-bold mt-2">ចុះឈ្មោះគណនីថ្មី</h3>
+                    <p class="text-muted">បង្កើតគណនីសម្រាប់សិស្ស</p>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ឈ្មោះអ្នកប្រើ (Username)</label>
+                        <input type="text" name="username" class="form-control form-control-lg" required placeholder="ប្រើអក្សរឡាតាំង">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">លេខសម្ងាត់ (Password)</label>
+                        <input type="password" name="password" class="form-control form-control-lg" required placeholder="បង្កើតលេខសម្ងាត់រឹងមាំ">
+                    </div>
+                    
+                    <div class="alert alert-info small py-2 mb-4">
+                        <i class="bi bi-info-circle"></i> គណនីនេះនឹងមានតួនាទីជា <strong>"សិស្ស"</strong> ដោយស្វ័យប្រវត្តិ។
+                    </div>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-success btn-lg" style="border-radius: 10px;">ចុះឈ្មោះ</button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                <p class="text-center mb-0">
+                    មានគណនីរួចហើយ? <a href="{% url 'login' %}" class="text-primary fw-bold">ចូលប្រើប្រាស់នៅទីនេះ</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

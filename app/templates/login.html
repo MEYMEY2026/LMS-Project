@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow border-0" style="border-radius: 20px;">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    {% if system_settings.logo %}
+                        <img src="{{ system_settings.logo.url }}" alt="Logo" style="height: 80px; border-radius: 15px;" class="mb-3">
+                    {% else %}
+                        <i class="bi bi-mortarboard-fill text-primary" style="font-size: 3.5rem;"></i>
+                    {% endif %}
+                    <h3 class="fw-bold mt-2">{{ system_settings.app_name }}</h3>
+                    <p class="text-muted">សូមចូលប្រើប្រាស់ដើម្បីបន្ត</p>
+                </div>
+
+                <!-- បង្ហាញសារប្រសិនបើមាន Error -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <!-- Form Login ត្រូវតែមាន method="POST" និង {% csrf_token %} -->
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ឈ្មោះអ្នកប្រើ (Username)</label>
+                        <input type="text" name="username" class="form-control form-control-lg" required placeholder="ប្រើអក្សរឡាតាំង">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">លេខសម្ងាត់ (Password)</label>
+                        <input type="password" name="password" class="form-control form-control-lg" required placeholder="បំពេញលេខសម្ងាត់">
+                    </div>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg" style="border-radius: 10px;">ចូលប្រើប្រាស់</button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                <p class="text-center mb-0">
+                    មិនទាន់មានគណនី? <a href="{% url 'register' %}" class="text-primary fw-bold">ចុះឈ្មោះនៅទីនេះ</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

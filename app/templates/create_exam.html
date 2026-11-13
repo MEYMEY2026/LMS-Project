@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">📝 បង្កើតការប្រឡងថ្មី</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="examForm">
+                    {% csrf_token %}
+                    
+                    <!-- ព័ត៌មានការប្រឡង -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ចំណងជើងការប្រឡង</label>
+                            <input type="text" name="title" class="form-control" required placeholder="ឧ. ការប្រឡងគណិតវិទ្យា វគ្គ១">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">រយៈពេល (នាទី)</label>
+                            <input type="number" name="duration" class="form-control" value="30" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">ពិន្ទុជាប់ (%)</label>
+                            <input type="number" name="pass_percentage" class="form-control" value="50" required>
+                        </div>
+                    </div>
+
+                    <!-- ⬇️ បន្ថែមប្រអប់ថ្មីសម្រាប់ចំនួនដងប្រឡង ⬇️ -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">ចំនួនដងអាចប្រឡងបាន</label>
+                            <select name="max_attempts" class="form-select" required>
+                                <option value="1">១ ដងគត់</option>
+                                <option value="2">២ ដង</option>
+                                <option value="3">៣ ដង</option>
+                                <option value="999">គ្មានកំណត់ (ប្រឡងបានច្រើនដង)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- ⬆️ បញ្ចប់ការបន្ថែម ⬆️ -->
+
+                    <!-- ប្រអប់ធីកអនុញ្ញាតឱ្យមើលចម្លើយ -->
+                    <div class="mb-4 form-check p-3 bg-light rounded border">
+                        <input type="checkbox" name="show_answers_after_exam" class="form-check-input ms-0 me-2" id="showAnswers" checked>
+                        <label class="form-check-label fw-bold text-success" for="showAnswers" style="cursor:pointer;">
+                            ✅ អនុញ្ញាតឱ្យសិស្សមើលចម្លើយត្រូវ/ខុស និងពិន្ទុលម្អិត ក្រោយពេលប្រឡងចប់
+                        </label>
+                    </div>
+
+                    <hr>
+                    
+                    <!-- ជម្រើសសំណួរ -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">⚙️ ជម្រើសជ្រើសរើសសំណួររហ័ស (Auto-Select)</h5>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">ជ្រើសរើសតាមមុខវិជ្ជា</label>
+                                    <select id="filterSubject" class="form-select">
+                                        <option value="">-- មុខវិជ្ជាទាំងអស់ --</option>
+                                        {% for sub in subjects %}
+                                            <option value="{{ sub.id }}">{{ sub.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">ចំនួនសំណួរ (Random)</label>
+                                    <input type="number" id="randomCount" class="form-control" placeholder="ឧ. 10" min="1">
+                                </div>
+                                <div class="col-md-5">
+                                    <button type="button" onclick="randomizeQuestions()" class="btn btn-warning w-100 fw-bold">🎲 លាយយកសំណួរចៃដន្យ</button>
+                                    <button type="button" onclick="selectAllQuestions()" class="btn btn-info w-100 mt-2 text-white fw-bold">✅ ជ្រើសរើសទាំងអស់</button>
+                                    <button type="button" onclick="deselectAllQuestions()" class="btn btn-outline-danger w-100 mt-2">❌ ដោះធីកទាំងអស់</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ប្រអប់ស្វែងរកសំណួរ -->
+                    <div class="mb-3">
+                        <input type="text" id="searchQuestion" class="form-control" placeholder="🔍 វាយពាក្យដើម្បីស្វែងរកសំណួរជាក់លាក់...">
+                    </div>
+
+                    <!-- បញ្ជីសំណួររៀបតាមមុខវិជ្ជា -->
+                    <div class="border rounded p-3 bg-white mb-4" style="max-height: 500px; overflow-y: auto;">
+                        {% for sub in subjects %}
+                            <div class="mb-3 subject-group" data-subject-id="{{ sub.id }}">
+                                <h6 class="text-primary border-bottom pb-1 fw-bold">📚 {{ sub.name }} ({{ sub.code }})</h6>
+                                
+                                {% for q in questions %}
+                                    {% if q.subject.id == sub.id %}
+                                    <div class="form-check mb-2 question-item" data-subject-id="{{ sub.id }}">
+                                        <input class="form-check-input question-checkbox" type="checkbox" name="questions" value="{{ q.id }}" id="q{{ q.id }}" data-subject-id="{{ sub.id }}">
+                                        <label class="form-check-label" for="q{{ q.id }}">
+                                            {{ q.question_text }}
+                                        </label>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% empty %}
+                            <p class="text-danger mb-0">មិនទាន់មានសំណួរទេ។ សូមបញ្ចូលសំណួរជាមុនសិន។</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- ប្រអប់ជ្រើសរើសសិស្សចូលរួមប្រឡង -->
+                    <div class="card bg-light border-0 mb-4 mt-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">👨‍🎓 ជ្រើសរើសសិស្សចូលរួមប្រឡង</h5>
+                            <p class="small text-muted mb-3">សិស្សដែលមិនត្រូវបានធីក នឹងមិនអាចមើលឃើញ ឬចូលប្រឡងនេះបានឡើយ។</p>
+                            
+                            <div class="border rounded p-3 bg-white" style="max-height: 250px; overflow-y: auto;">
+                                {% for student in students %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="students" value="{{ student.id }}" id="student{{ student.id }}">
+                                    <label class="form-check-label" for="student{{ student.id }}">
+                                        {{ student.username }} 
+                                        {% if student.get_full_name %} ({{ student.get_full_name }}) {% endif %}
+                                    </label>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted mb-0">មិនទាន់មានសិស្សនៅក្នុងប្រព័ន្ធទេ។</p>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelectorAll('input[name=\'students\']').forEach(cb => cb.checked = true)">ជ្រើសរើសទាំងអស់</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="document.querySelectorAll('input[name=\'students\']').forEach(cb => cb.checked = false)">ដោះធីកទាំងអស់</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ប៊ូតុងរក្សាទុក -->
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">💾 រក្សាទុកការប្រឡង</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function randomizeQuestions() {
+    let subjectId = document.getElementById('filterSubject').value;
+    let count = parseInt(document.getElementById('randomCount').value);
+    
+    if (!count || count < 1) {
+        alert("សូមបញ្ចូលចំនួនសំណួរដែលចង់លាយយក!");
+        return;
+    }
+    if (!subjectId) {
+        alert("សូមជ្រើសរើសមុខវិជ្ជាមុនសិន!");
+        return;
+    }
+
+    let checkboxes = Array.from(document.querySelectorAll(`.question-checkbox[data-subject-id="${subjectId}"]`));
+    
+    if (checkboxes.length === 0) {
+        alert("មុខវិជ្ជានេះមិនមានសំណួរទេ!");
+        return;
+    }
+
+    document.querySelectorAll('.question-checkbox').forEach(cb => cb.checked = false);
+    checkboxes.sort(() => 0.5 - Math.random());
+    let selected = checkboxes.slice(0, count);
+    selected.forEach(cb => cb.checked = true);
+    alert(`បានលាយយកសំណួរចំនួន ${selected.length} ដោយជោគជ័យ! 🎲`);
+}
+
+function selectAllQuestions() {
+    let subjectId = document.getElementById('filterSubject').value;
+    if (!subjectId) {
+        document.querySelectorAll('.question-checkbox').forEach(cb => cb.checked = true);
+    } else {
+        document.querySelectorAll(`.question-checkbox[data-subject-id="${subjectId}"]`).forEach(cb => cb.checked = true);
+    }
+}
+
+function deselectAllQuestions() {
+    document.querySelectorAll('.question-checkbox').forEach(cb => cb.checked = false);
+}
+
+document.getElementById('searchQuestion').addEventListener('keyup', function() {
+    let searchText = this.value.toLowerCase();
+    let questionItems = document.querySelectorAll('.question-item');
+    let subjectGroups = document.querySelectorAll('.subject-group');
+    
+    questionItems.forEach(function(item) {
+        let text = item.textContent.toLowerCase();
+        item.style.display = text.includes(searchText) ? '' : 'none';
+    });
+    
+    subjectGroups.forEach(function(group) {
+        let visibleItems = group.querySelectorAll('.question-item:not([style*="display: none"])');
+        group.style.display = visibleItems.length === 0 ? 'none' : '';
+    });
+});
+</script>
+{% endblock %}

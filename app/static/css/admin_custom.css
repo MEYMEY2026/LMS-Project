@@ -1,0 +1,21 @@
+/* ប្តូរ Font ទៅជា Kantumruy Pro */
+body {
+    font-family: 'Kantumruy Pro', sans-serif !important;
+}
+
+/* ធ្វើឱ្យកាត (Cards) មានជ្រុងមូល និងស្រមោលស្រាល */
+.card {
+    border-radius: 15px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+    border: none !important;
+}
+
+/* ធ្វើឱ្យប៊ូតុងមានជ្រុងមូល */
+.btn {
+    border-radius: 8px !important;
+}
+
+/* ពណ៌ចម្បងសម្រាប់ Sidebar */
+.main-sidebar {
+    background-color: #1e3a8a !important; /* Navy Blue */
+}

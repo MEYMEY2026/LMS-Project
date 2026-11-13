@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .stat-icon.blue { background: #EFF6FF; color: #2563EB; }
+    .stat-icon.green { background: #ECFDF5; color: #10B981; }
+    .stat-icon.purple { background: #F5F3FF; color: #8B5CF6; }
+    .stat-icon.orange { background: #FFF7ED; color: #F97316; }
+    
+    .stat-info h6 { color: #64748B; font-size: 0.875rem; margin-bottom: 4px; }
+    .stat-info h3 { color: #0F172A; font-size: 1.5rem; font-weight: 700; margin: 0; }
+
+    .action-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #E2E8F0;
+        text-align: center;
+        transition: all 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        border-color: #2563EB;
+    }
+
+    .action-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 16px;
+    }
+
+    .btn-premium {
+        background: #2563EB;
+        color: white;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 500;
+        border: none;
+        transition: background 0.2s;
+    }
+    .btn-premium:hover { background: #1D4ED8; color: white; }
+</style>
+
+<!-- Welcome Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary-navy text-white border-0" style="background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold mb-2">សូមស្វាគមន៍, {{ user.get_full_name|default:user.username }}! 👋</h3>
+                    <p class="mb-0 opacity-75">សូមគ្រប់គ្រងប្រព័ន្ធអប់រំរបស់អ្នកដោយភាពងាយស្រួល។</p>
+                </div>
+                <i class="bi bi-person-circle d-none d-md-block" style="font-size: 5rem; opacity: 0.2;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards (Teacher View) -->
+{% if user.profile.is_teacher %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-info">
+                <h6>សិស្សសរុប</h6>
+                <h3>{{ total_students|default:"0" }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-journal-check"></i></div>
+            <div class="stat-info">
+                <h6>សំណួរសរុប</h6>
+                <h3>{{ total_questions|default:"0" }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <div class="stat-info">
+                <h6>ការប្រឡងសរុប</h6>
+                <h3>{{ total_exams|default:"0" }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="stat-info">
+                <h6>ប្រឡងចប់</h6>
+                <h3>{{ completed_exams|default:"0" }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions (Teacher) -->
+<h5 class="mb-3 fw-bold text-dark">សកម្មភាពរហ័ស</h5>
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="action-card">
+            <div class="action-icon" style="background: #EFF6FF; color: #2563EB;"><i class="bi bi-plus-circle-fill"></i></div>
+            <h5 class="fw-bold">បង្កើតសំណួរ</h5>
+            <p class="text-muted small">បន្ថែមសំណួរថ្មីៗចូលក្នុងប្រព័ន្ធ</p>
+            <a href="{% url 'add_question' %}" class="btn btn-premium mt-auto w-100">បង្កើតឥឡូវនេះ</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="action-card">
+            <div class="action-icon" style="background: #ECFDF5; color: #10B981;"><i class="bi bi-pencil-square"></i></div>
+            <h5 class="fw-bold">បង្កើតការប្រឡង</h5>
+            <p class="text-muted small">រៀបចំវិញ្ញាសាថ្មីសម្រាប់សិស្ស</p>
+            <a href="{% url 'create_exam' %}" class="btn btn-premium mt-auto w-100">បង្កើតឥឡូវនេះ</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="action-card">
+            <div class="action-icon" style="background: #F5F3FF; color: #8B5CF6;"><i class="bi bi-bar-chart-line-fill"></i></div>
+            <h5 class="fw-bold">មើលលទ្ធផល</h5>
+            <p class="text-muted small">តាមដានពិន្ទុ និងលទ្ធផលសិស្ស</p>
+            <a href="{% url 'teacher_results' %}" class="btn btn-premium mt-auto w-100">មើលលទ្ធផល</a>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Student View -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="action-card h-100">
+            <div class="action-icon" style="background: #EFF6FF; color: #2563EB;"><i class="bi bi-journal-text"></i></div>
+            <h5 class="fw-bold">ចូលរួមប្រឡង</h5>
+            <p class="text-muted">ស្វែងរកវិញ្ញាសា និងចាប់ផ្តើមធ្វើការប្រឡងរបស់អ្នក។</p>
+            <a href="{% url 'exam_list' %}" class="btn btn-premium mt-auto w-100">ចាប់ផ្តើមប្រឡង</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="action-card h-100">
+            <div class="action-icon" style="background: #ECFDF5; color: #10B981;"><i class="bi bi-graph-up-arrow"></i></div>
+            <h5 class="fw-bold">ពិនិត្យលទ្ធផល</h5>
+            <p class="text-muted">មើលពិន្ទុ និងប្រវត្តិនៃការប្រឡងរបស់អ្នក។</p>
+            <a href="{% url 'student_results' %}" class="btn btn-premium mt-auto w-100">មើលលទ្ធផល</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

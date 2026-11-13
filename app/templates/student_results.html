@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+    <h3>📊 លទ្ធផលប្រឡងរបស់ខ្ញុំ</h3>
+    <a href="{% url 'exam_list' %}" class="btn btn-primary">ទៅធ្វើការប្រឡង</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ការប្រឡង</th>
+                    <th>ពិន្ទុ</th>
+                    <th>ភាគរយ</th>
+                    <th>លទ្ធផល</th>
+                    <th>កាលបរិច្ឆេទ</th>
+                    <th>សកម្មភាព</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in attempts %}
+                <tr>
+                    <td>{{ attempt.exam.title }}</td>
+                    <td>{{ attempt.score }} / {{ attempt.exam.total_marks }}</td>
+                    <td>{{ attempt.percentage|floatformat:1 }}%</td>
+                    <td>
+                        {% if attempt.is_passed %}
+                            <span class="badge bg-success">ជាប់ ✅</span>
+                        {% else %}
+                            <span class="badge bg-danger">ធ្លាក់ ❌</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ attempt.completed_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'exam_result' attempt.id %}" class="btn btn-sm btn-info text-white">មើលលម្អិត</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">អ្នកមិនទាន់បានធ្វើការប្រឡងណាមួយទេ។</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

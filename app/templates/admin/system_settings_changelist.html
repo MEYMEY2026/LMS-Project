@@ -1,0 +1,73 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">⚙️ ការកំណត់រូបរាង និងប្រព័ន្ធ</h2>
+    
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <!-- ត្រូវតែមាន enctype="multipart/form-data" ដើម្បី Upload រូបភាពបាន -->
+            <form method="POST" action="{% url 'admin:update-settings' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- ឈ្មោះ App -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">ឈ្មោះកម្មវិធី (App Name)</label>
+                    <input type="text" name="app_name" class="form-control form-control-lg" value="{{ settings_obj.app_name }}" required>
+                </div>
+
+                <!-- ពណ៌ចម្បង -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">ពណ៌ចម្បងរបស់ប្រព័ន្ធ (Primary Color)</label>
+                    <input type="color" name="primary_color" class="form-control form-control-color" value="{{ settings_obj.primary_color|default:'#0d6efd' }}" title="ជ្រើសរើសពណ៌">
+                </div>
+
+                <!-- រូបភាព Logo និង Favicon -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Logo (រូបសញ្ញាកម្មវិធី)</label>
+                        <input type="file" name="logo" class="form-control" accept="image/*">
+                        {% if settings_obj.logo %}
+                            <small class="text-success">✅ មានរូបភាពស្រាប់</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Favicon (រូបតូចលើ Tab Browser)</label>
+                        <input type="file" name="favicon" class="form-control" accept="image/*">
+                        {% if settings_obj.favicon %}
+                            <small class="text-success">✅ មានរូបភាពស្រាប់</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- រូបភាពផ្ទៃខាងក្រោយ Login -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">រូបភាពផ្ទៃខាងក្រោយទំព័រ Login (Login Background)</label>
+                    <input type="file" name="login_background" class="form-control" accept="image/*">
+                    {% if settings_obj.login_background %}
+                        <small class="text-success">✅ មានរូបភាពស្រាប់</small>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <!-- សារជូនដំណឹង -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">សារជូនដំណឹងទូទៅ (Global Announcement)</label>
+                    <textarea name="announcement" class="form-control" rows="3" placeholder="សរសេរសារដែលអ្នកចង់ផ្ញើទៅកាន់អ្នកប្រើទាំងអស់...">{% if settings_obj.announcement %}{{ settings_obj.announcement }}{% endif %}</textarea>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" name="send_notification" id="sendNotif" checked>
+                    <label class="form-check-label fw-bold text-success" for="sendNotif">
+                        ✅ ផ្ញើសារនេះទៅកណ្ដឹងរបស់អ្នកប្រើប្រាស់ទាំងអស់ភ្លាមៗ
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">💾 រក្សាទុកការកំណត់ទាំងអស់</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

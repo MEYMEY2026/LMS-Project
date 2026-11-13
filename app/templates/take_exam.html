@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+{% block page_title %}កំពុងប្រឡង{% endblock %}
+{% block content %}
+
+<style>
+    body {
+        font-size: 0.95rem;
+        background-color: #F8FAFC;
+    }
+
+    .question-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        background: white;
+        margin-bottom: 80px; /* ទុកចន្លោះសម្រាប់ប៊ូតុង Sticky */
+    }
+
+    .question-header {
+        background: linear-gradient(135deg, #172554 0%, #2563EB 100%);
+        padding: 20px;
+        color: white;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .question-body {
+        padding: 20px;
+    }
+
+    .question-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0F172A;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    /* ប្រអប់ជម្រើសចម្លើយ */
+    .option-label {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border: 2px solid #E2E8F0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+        color: #0F172A;
+        margin-bottom: 10px;
+        background: white;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+
+    .option-label:hover {
+        border-color: #CBD5E1;
+        background-color: #F8FAFC;
+    }
+
+    .form-check-input:checked + .option-label {
+        border-color: #2563EB;
+        background-color: #EFF6FF;
+        color: #1D4ED8;
+    }
+
+    .form-check-input { display: none; }
+
+    .option-letter {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #F8FAFC;
+        border-radius: 6px;
+        font-weight: 700;
+        margin-right: 12px;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        font-size: 0.85rem;
+    }
+
+    .form-check-input:checked + .option-label .option-letter {
+        background: #2563EB;
+        color: white;
+        border-color: #2563EB;
+    }
+
+    /* Timer Box */
+    .timer-box {
+        font-size: 1.1rem;
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 10px;
+        background-color: rgba(255,255,255,0.2);
+        backdrop-filter: blur(5px);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.4);
+        transition: all 0.3s;
+    }
+
+    .timer-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        animation: pulse 1s infinite;
+        color: white;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    /* ប្រអប់លេខសំណួរ (Navigation) */
+    .nav-btn {
+        width: 36px; 
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        border-radius: 8px;
+        border: 2px solid #E2E8F0;
+        color: #64748B;
+        text-decoration: none;
+        background-color: white;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    
+    .nav-btn:hover { border-color: #2563EB; color: #2563EB; }
+    
+    .nav-btn.answered {
+        background-color: #10B981 !important;
+        border-color: #10B981 !important;
+        color: white !important;
+    }
+
+    .question-step { display: none; }
+    .question-step.active { display: block; animation: fadeIn 0.3s; }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ⬇️ ប៊ូតុង Sticky Bottom ដែលនៅជិតគ្នា ⬇️ */
+    .sticky-bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 12px 20px;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        z-index: 1050;
+        display: flex;
+        justify-content: center; /* ដាក់កណ្តាល */
+        align-items: center;
+        gap: 15px; /* ចន្លោះរវាងប៊ូតុង */
+    }
+    
+    .sticky-bottom-bar .btn {
+        padding: 10px 30px; /* ធ្វើឱ្យប៊ូតុងធំជាងមុនបន្តិច */
+        font-weight: 600;
+        border-radius: 10px;
+    }
+</style>
+
+<div class="row mt-3 mb-5">
+    
+    <!-- ផ្នែកខាងលើ៖ តួសំណួរ និង Timer -->
+    <div class="col-md-8 mx-auto">
+        <div class="card question-card">
+            <!-- ក្បាលទំព័រ -->
+            <div class="question-header d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <h5 class="mb-0 fw-bold">{{ exam.title }}</h5>
+                <div class="timer-box" id="timerDisplay">
+                    ⏱️ 00:00
+                </div>
+            </div>
+            
+            <div class="question-body">
+                <form method="POST" id="examForm">
+                    {% csrf_token %}
+                    
+                    {% for q in questions %}
+                    <div class="question-step" id="step-{{ forloop.counter }}" data-qid="{{ q.id }}">
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-2 px-2 py-1" style="border-radius: 6px; font-size: 0.8rem;">
+                                សំណួរទី {{ forloop.counter }} / {{ questions|length }}
+                            </span>
+                            <h6 class="question-text">
+                                {{ q.question_text }}
+                            </h6>
+                        </div>
+                        
+                        <div class="options-container">
+                            <input class="form-check-input option-radio" type="radio" name="question_{{ q.id }}" value="A" id="q{{ q.id }}a" data-qid="{{ q.id }}">
+                            <label class="option-label" for="q{{ q.id }}a">
+                                <span class="option-letter">A</span> {{ q.option_a }}
+                            </label>
+
+                            <input class="form-check-input option-radio" type="radio" name="question_{{ q.id }}" value="B" id="q{{ q.id }}b" data-qid="{{ q.id }}">
+                            <label class="option-label" for="q{{ q.id }}b">
+                                <span class="option-letter">B</span> {{ q.option_b }}
+                            </label>
+
+                            <input class="form-check-input option-radio" type="radio" name="question_{{ q.id }}" value="C" id="q{{ q.id }}c" data-qid="{{ q.id }}">
+                            <label class="option-label" for="q{{ q.id }}c">
+                                <span class="option-letter">C</span> {{ q.option_c }}
+                            </label>
+
+                            <input class="form-check-input option-radio" type="radio" name="question_{{ q.id }}" value="D" id="q{{ q.id }}d" data-qid="{{ q.id }}">
+                            <label class="option-label" for="q{{ q.id }}d">
+                                <span class="option-letter">D</span> {{ q.option_d }}
+                            </label>
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="mt-4 text-center" id="submit-btn-container" style="display: none;">
+                        <button type="submit" class="btn btn-success btn-lg w-100" style="border-radius: 10px;" onclick="return confirm('តើអ្នកប្រាកដជាចង់បញ្ជូនចម្លើយមែនទេ?');">
+                            <i class="bi bi-check-circle-fill"></i> បញ្ជូនចម្លើយទាំងអស់
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ផ្នែកខាងក្រោម៖ Navigation Box -->
+    <div class="col-md-8 mx-auto mt-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                <h6 class="mb-0 fw-bold text-secondary">🧭 បញ្ជីសំណួរ</h6>
+            </div>
+            <div class="card-body p-3">
+                <div class="d-flex flex-wrap gap-2 justify-content-start mb-3">
+                    {% for q in questions %}
+                        <a onclick="goToQuestion({{ forloop.counter }})" 
+                           id="nav-btn-{{ q.id }}"
+                           class="nav-btn">
+                            {{ forloop.counter }}
+                        </a>
+                    {% endfor %}
+                </div>
+                
+                <hr class="my-2">
+                
+                <div class="small d-flex flex-row gap-3 mb-2">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success me-2" style="width: 10px; height: 10px; border-radius: 3px;">&nbsp;</span> បានឆ្លើយ
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge border text-dark me-2" style="width: 10px; height: 10px; border-radius: 3px; background-color: #fff;">&nbsp;</span> មិនទាន់ឆ្លើយ
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ⬇️ ប៊ូតុង Sticky Bottom (មុន/បន្ទាប់) ដែលនៅជិតគ្នា ⬇️ -->
+<div class="sticky-bottom-bar">
+    <button type="button" id="prevBtn" class="btn btn-outline-secondary" onclick="prevPage()" style="display: none;">
+        <i class="bi bi-arrow-left"></i> មុន
+    </button>
+    
+    <button type="button" id="nextBtn" class="btn btn-primary" onclick="nextPage()">
+        បន្ទាប់ <i class="bi bi-arrow-right"></i>
+    </button>
+</div>
+
+<script>
+// ==========================================
+// ១. មុខងារ Pagination
+// ==========================================
+let currentPage = 1;
+const questionsPerPage = 1;
+const totalQuestions = {{ questions|length }};
+const totalPages = Math.ceil(totalQuestions / questionsPerPage);
+
+function showPage(page) {
+    document.querySelectorAll('.question-step').forEach(el => el.classList.remove('active'));
+    
+    let start = (page - 1) * questionsPerPage + 1;
+    let end = Math.min(page * questionsPerPage, totalQuestions);
+    
+    for (let i = start; i <= end; i++) {
+        let el = document.getElementById('step-' + i);
+        if (el) el.classList.add('active');
+    }
+
+    if (page === 1) {
+        document.getElementById('prevBtn').style.display = 'none';
+    } else {
+        document.getElementById('prevBtn').style.display = 'inline-block';
+    }
+
+    if (page === totalPages) {
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('submit-btn-container').style.display = 'block';
+    } else {
+        document.getElementById('nextBtn').style.display = 'inline-block';
+        document.getElementById('submit-btn-container').style.display = 'none';
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        showPage(currentPage);
+    }
+}
+
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        showPage(currentPage);
+    }
+}
+
+function goToQuestion(questionNumber) {
+    let page = Math.ceil(questionNumber / questionsPerPage);
+    currentPage = page;
+    showPage(page);
+}
+
+// ==========================================
+// ២. មុខងារប្តូរពណ៌ប្រអប់លេខពេលឆ្លើយរួច
+// ==========================================
+document.addEventListener("DOMContentLoaded", function() {
+    showPage(1);
+
+    const radios = document.querySelectorAll('.option-radio');
+    radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            let qid = this.getAttribute('data-qid'); 
+            let navBtn = document.getElementById('nav-btn-' + qid); 
+            if (navBtn) navBtn.classList.add('answered');
+        });
+    });
+});
+
+// ==========================================
+// ៣. Timer (ម៉ោងរាប់ថយក្រោយ) និង Auto-Submit
+// ==========================================
+let timeLeft = {{ exam.duration_minutes }} * 60; 
+const timerDisplay = document.getElementById('timerDisplay');
+const examForm = document.getElementById('examForm');
+let isSubmitClicked = false;
+
+function updateTimer() {
+    if (timeLeft <= 0) {
+        timerDisplay.innerHTML = "⏰ អស់ម៉ោង!";
+        timerDisplay.classList.add('timer-danger');
+        alert("អស់ពេលវេលាហើយ! ប្រព័ន្ធនឹងបញ្ជូនចម្លើយរបស់អ្នកដោយស្វ័យប្រវត្តិ។");
+        isSubmitClicked = true;
+        examForm.submit();
+        return;
+    }
+
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    
+    timerDisplay.innerHTML = `⏱️ ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+    if (timeLeft <= 300) {
+        timerDisplay.classList.add('timer-danger');
+    }
+
+    timeLeft--;
+}
+
+setInterval(updateTimer, 1000);
+updateTimer(); 
+
+// ==========================================
+// ៤. ការពារការចាកចេញ (Anti-Cheat)
+// ==========================================
+document.querySelectorAll('button[type="submit"]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        isSubmitClicked = true;
+    });
+});
+
+window.addEventListener('beforeunload', function (e) {
+    if (!isSubmitClicked) {
+        e.preventDefault();
+        e.returnValue = 'អ្នកកំពុងប្រឡង! ប្រសិនបើអ្នកចាកចេញ ចម្លើយរបស់អ្នកនឹងមិនត្រូវបានរក្សាទុកឡើយ។';
+    }
+});
+</script>
+{% endblock %}

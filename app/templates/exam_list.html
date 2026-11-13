@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+    <h3>📝 បញ្ជីការប្រឡងដែលមាន</h3>
+    {% if user.profile.is_teacher %}
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">ត្រឡប់ទៅ Dashboard</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% if user.profile.is_teacher %}
+        <!-- កូដសម្រាប់គ្រូ -->
+        {% for exam in exams %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ exam.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">⏱️ រយៈពេល: <strong>{{ exam.duration_minutes }} នាទី</strong></li>
+                        <li class="mb-2">📊 ពិន្ទុសរុប: <strong>{{ exam.total_marks }} ពិន្ទុ</strong></li>
+                        <li class="mb-2">🎯 ពិន្ទុជាប់: <strong>{{ exam.pass_percentage }}%</strong></li>
+                        <li class="mb-2">🔁 អាចប្រឡងបាន: <strong>{{ exam.max_attempts }} ដង</strong></li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <button class="btn btn-secondary w-100" disabled>អ្នកជាគ្រូ (មិនអាចប្រឡង)</button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <h4 class="text-muted">មិនទាន់មានការប្រឡងទេ!</h4>
+        </div>
+        {% endfor %}
+
+    {% else %}
+        <!-- កូដសម្រាប់សិស្ស (បង្ហាញប៊ូតុងផ្លាស់ប្តូរតាមស្ថានភាព) -->
+        {% for data in exam_data %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm {% if data.has_attempted %}border-secondary{% else %}border-success{% endif %}">
+                <div class="card-header {% if data.has_attempted %}bg-secondary{% else %}bg-success{% endif %} text-white">
+                    <h5 class="mb-0">{{ data.exam.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">⏱️ រយៈពេល: <strong>{{ data.exam.duration_minutes }} នាទី</strong></li>
+                        <li class="mb-2">📊 ពិន្ទុសរុប: <strong>{{ data.exam.total_marks }} ពិន្ទុ</strong></li>
+                        <li class="mb-2">🎯 ពិន្ទុជាប់: <strong>{{ data.exam.pass_percentage }}%</strong></li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    {% if data.has_attempted %}
+                        <!-- ប្រសិនបើប្រឡងរួចហើយ -->
+                        <button class="btn btn-outline-secondary w-100" disabled>✅ ប្រឡងរួច</button>
+                    {% else %}
+                        <!-- ប្រសិនបើមិនទាន់ប្រឡង -->
+                        <a href="{% url 'take_exam' data.exam.id %}" class="btn btn-success w-100">🚀 ចាប់ផ្ដើមប្រឡង</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <h4 class="text-muted">មិនទាន់មានការប្រឡងសម្រាប់អ្នកទេ!</h4>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

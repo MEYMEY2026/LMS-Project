@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-9">
+        
+        <!-- ផ្នែកសេចក្តីសង្ខេបពិន្ទុ (ពិន្ទុសរុប) -->
+        <div class="card shadow border-0 text-center mb-4">
+            <div class="card-body p-5">
+                <h2 class="mb-3">លទ្ធផលប្រឡង</h2>
+                <h4 class="text-muted mb-4">{{ attempt.exam.title }}</h4>
+                
+                {% if attempt.is_passed %}
+                    <h1 class="display-1">🎉</h1>
+                    <h3 class="text-success mb-3">អ្នកបានជាប់! ✅</h3>
+                {% else %}
+                    <h1 class="display-1">😔</h1>
+                    <h3 class="text-danger mb-3">អ្នកបានធ្លាក់! ❌</h3>
+                {% endif %}
+                
+                <!-- បង្ហាញពិន្ទុសរុប -->
+                <div class="display-4 fw-bold mb-2">{{ attempt.percentage|floatformat:1 }}%</div>
+                <p class="fs-5 text-muted">ពិន្ទុទទួលបានសរុប: <strong>{{ attempt.score }} / {{ attempt.exam.total_marks }}</strong></p>
+            </div>
+        </div>
+
+        <!-- ផ្នែកបង្ហាញចម្លើយលម្អិត (បើកបានលុះត្រាតែគ្រូអនុញ្ញាត) -->
+        {% if attempt.exam.show_answers_after_exam %}
+            <h4 class="mb-3 border-bottom pb-2">📝 ពិនិត្យចម្លើយលម្អិត</h4>
+            
+            {% for ans in answers %}
+            <div class="card mb-3 shadow-sm border-0" style="border-left: 6px solid {% if ans.is_correct %}#198754{% else %}#dc3545{% endif %};">
+                <div class="card-body p-4">
+                    <!-- បង្ហាញសំណួរ -->
+                    <h6 class="fw-bold mb-3" style="font-size: 1.1rem;">
+                        សំណួរ: {{ ans.question.question_text }}
+                    </h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <span class="text-muted">ចម្លើយរបស់អ្នក:</span> 
+                            <span class="badge {% if ans.is_correct %}bg-success{% else %}bg-danger{% endif %} fs-6 ms-1">
+                                {{ ans.selected_answer }}
+                                <!-- បង្ហាញអត្ថបទជម្រើសដែលសិស្សជ្រើសរើស -->
+                                {% if ans.selected_answer == 'A' %} {{ ans.question.option_a }}
+                                {% elif ans.selected_answer == 'B' %} {{ ans.question.option_b }}
+                                {% elif ans.selected_answer == 'C' %} {{ ans.question.option_c }}
+                                {% elif ans.selected_answer == 'D' %} {{ ans.question.option_d }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <span class="text-muted">ចម្លើយត្រឹមត្រូវ:</span> 
+                            <span class="badge bg-success fs-6 ms-1">
+                                {{ ans.question.correct_answer }}
+                                {% if ans.question.correct_answer == 'A' %} {{ ans.question.option_a }}
+                                {% elif ans.question.correct_answer == 'B' %} {{ ans.question.option_b }}
+                                {% elif ans.question.correct_answer == 'C' %} {{ ans.question.option_c }}
+                                {% elif ans.question.correct_answer == 'D' %} {{ ans.question.option_d }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                        <small class="text-muted">ពិន្ទុសំណួរនេះ: {{ ans.question.points }} ពិន្ទុ</small>
+                        {% if ans.is_correct %}
+                            <span class="text-success fw-bold">✅ ត្រឹមត្រូវ (+{{ ans.question.points }})</span>
+                        {% else %}
+                            <span class="text-danger fw-bold">❌ មិនត្រឹមត្រូវ (0)</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+        {% else %}
+            <div class="alert alert-warning text-center p-4 shadow-sm border-0">
+                <h5 class="mb-2">⚠️ មិនអនុញ្ញាតឱ្យមើលចម្លើយ</h5>
+                <p class="mb-0">គ្រូបង្រៀនមិនបានអនុញ្ញាតឱ្យមើលចម្លើយលម្អិតទេ។ អ្នកអាចមើលបានតែពិន្ទុសរុបប៉ុណ្ណោះ។</p>
+            </div>
+        {% endif %}
+
+        <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
+        <div class="text-center mt-4 mb-5">
+            <a href="{% url 'exam_list' %}" class="btn btn-primary px-4">ត្រឡប់ទៅបញ្ជីការប្រឡង</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary px-4 ms-2">ត្រឡប់ទៅ Dashboard</a>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

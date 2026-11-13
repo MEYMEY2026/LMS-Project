@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">➕ បញ្ចូលសំណួរថ្មី (MCQ)</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- ជ្រើសរើសមុខវិជ្ជា -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ជ្រើសរើសមុខវិជ្ជា</label>
+                        <select name="subject" class="form-select" required>
+                            <option value="">-- ជ្រើសរើសមុខវិជ្ជា --</option>
+                            {% for sub in subjects %}
+                                <option value="{{ sub.id }}">{{ sub.name }} ({{ sub.code }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">ប្រសិនបើមិនមានមុខវិជ្ជា សូមចូលទៅ <a href="{% url 'manage_subjects' %}">បង្កើតមុខវិជ្ជាថ្មី</a> ជាមុនសិន។</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">សំណួរ</label>
+                        <textarea name="question_text" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ជម្រើស A</label>
+                            <input type="text" name="option_a" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ជម្រើស B</label>
+                            <input type="text" name="option_b" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ជម្រើស C</label>
+                            <input type="text" name="option_c" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ជម្រើស D</label>
+                            <input type="text" name="option_d" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">ចម្លើយត្រឹមត្រូវ</label>
+                        <select name="correct_answer" class="form-select" required>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100">រក្សាទុកសំណួរ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="km" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ system_settings.app_name|default:"Premium LMS" }}</title>
+    
+    <!-- Google Fonts: Inter (English) & Kantumruy Pro (Khmer) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- PWA Setup -->
+    <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
+    <meta name="theme-color" content="#172554">
+    
+    <style>
+        :root {
+            --primary-navy: #172554;
+            --primary-blue: #2563EB;
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-secondary: #64748B;
+            --border-color: #E2E8F0;
+            --success: #10B981;
+            --danger: #EF4444;
+            
+            --bs-body-font-family: 'Inter', 'Kantumruy Pro', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling - លាក់ខ្លួនទុកជាមុន */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: -260px; /* លាក់ខ្លួនទៅឆ្វេង */
+            background-color: var(--primary-navy);
+            color: white;
+            z-index: 1050; /* ខ្ពស់ជាង Navbar */
+            transition: all 0.3s;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+        
+        /* ពេលចុចប៊ូតុងទ្រេបី វានឹងបង្ហាញខ្លួន */
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-header img { max-height: 50px; border-radius: 8px; }
+
+        .sidebar-menu {
+            padding: 16px 8px;
+        }
+
+        .sidebar-menu a {
+            color: #CBD5E1;
+            text-decoration: none;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a i {
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(37, 99, 235, 0.2);
+            color: white;
+            border-left: 3px solid var(--primary-blue);
+        }
+
+        /* ផ្នែកខាងស្តាំ - បង្ហាញពេញលេញ ១០០% */
+        .main-content {
+            margin-left: 0;
+            transition: all 0.3s;
+            min-height: 100vh;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background-color: var(--card-bg);
+            height: 70px;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Notification & Icons */
+        .nav-icon {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            position: relative;
+        }
+        .nav-icon:hover { background: var(--bg-color); color: var(--primary-blue); }
+        
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            font-weight: bold;
+        }
+
+        /* Card Styling */
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            background-color: var(--card-bg);
+            transition: transform 0.2s;
+        }
+
+        /* Overlay សម្រាប់បាំងពេលបើក Sidebar លើទូរស័ព្ទ */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Overlay សម្រាប់បិទ Sidebar ពេលចុចខាងក្រៅ -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                {% if system_settings.logo %}
+                    <img src="{{ system_settings.logo.url }}" alt="Logo" style="max-height: 40px;">
+                {% else %}
+                    <i class="bi bi-mortarboard-fill fs-3 text-white"></i>
+                {% endif %}
+                <!-- ប៊ូតុងបិទ Sidebar -->
+                <button class="btn btn-link text-white p-0" onclick="toggleSidebar()">
+                    <i class="bi bi-x-lg fs-4"></i>
+                </button>
+            </div>
+            <h6 class="fw-bold text-white mb-0 text-start">{{ system_settings.app_name|default:"Premium LMS" }}</h6>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{% url 'dashboard' %}" class="{% if request.path == '/' %}active{% endif %}"><i class="bi bi-grid-1x2-fill"></i> Dashboard</a>
+            
+            {% if user.profile.is_teacher %}
+                <a href="{% url 'manage_subjects' %}"><i class="bi bi-folder-fill"></i> គ្រប់គ្រងមុខវិជ្ជា</a>
+                <a href="{% url 'add_question' %}"><i class="bi bi-plus-circle-fill"></i> បញ្ចូលសំណួរ</a>
+                <a href="{% url 'import_questions' %}"><i class="bi bi-upload"></i> Import សំណួរ</a>
+                <a href="{% url 'question_list' %}"><i class="bi bi-list-check"></i> បញ្ជីសំណួរ</a>
+                <a href="{% url 'create_exam' %}"><i class="bi bi-pencil-square"></i> គ្រប់គ្រងការប្រឡង</a>
+                <a href="{% url 'teacher_results' %}"><i class="bi bi-bar-chart-line-fill"></i> លទ្ធផលប្រឡង</a>
+            {% else %}
+                <a href="{% url 'exam_list' %}"><i class="bi bi-journal-text"></i> បញ្ជីប្រឡង</a>
+                <a href="{% url 'student_results' %}"><i class="bi bi-graph-up-arrow"></i> លទ្ធផលរបស់ខ្ញុំ</a>
+            {% endif %}
+            
+            <hr class="text-white-50">
+            <a href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> ព័ត៌មានផ្ទាល់ខ្លួន</a>
+            <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right text-danger"></i> ចាកចេញ</a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <div class="d-flex align-items-center">
+                <!-- ប៊ូតុងទ្រេបី បង្ហាញគ្រប់អេក្រង់ -->
+                <button class="btn btn-link text-dark me-2 p-0" onclick="toggleSidebar()">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+                <h5 class="mb-0 fw-bold text-dark d-none d-md-block">
+                    {% block page_title %}Dashboard{% endblock %}
+                </h5>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <!-- Search -->
+                <div class="input-group d-none d-lg-flex" style="width: 250px;">
+                    <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control bg-light border-0" placeholder="ស្វែងរក...">
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <button class="nav-icon border-0 bg-transparent" onclick="toggleTheme()">
+                    <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+                </button>
+
+                <!-- Language -->
+                <div class="dropdown">
+                    <button class="nav-icon border-0 bg-transparent" data-bs-toggle="dropdown">
+                        <i class="bi bi-globe"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li><a class="dropdown-item" href="#">🇰🇭 ខ្មែរ</a></li>
+                        <li><a class="dropdown-item" href="#">🇬🇧 English</a></li>
+                    </ul>
+                </div>
+
+                <!-- Notification -->
+                <div class="dropdown">
+                    <button class="nav-icon border-0 bg-transparent" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell-fill"></i>
+                        {% if unread_count > 0 %}
+                            <span class="notification-badge">{{ unread_count }}</span>
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="width: 300px;">
+                        <li class="px-3 py-2 border-bottom fw-bold">ការជូនដំណឹង</li>
+                        {% if notifications %}
+                            {% for notif in notifications %}
+                                <li><a class="dropdown-item py-2" href="{{ notif.link|default:'#' }}">{{ notif.message }}</a></li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="px-3 py-3 text-center text-muted">គ្មានការជូនដំណឹងទេ</li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- User Profile -->
+                <div class="dropdown ms-2">
+                    <button class="btn btn-link text-dark text-decoration-none d-flex align-items-center" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle fs-4 me-2"></i>
+                        <span class="d-none d-md-inline fw-medium">{{ user.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}">ព័ត៌មានផ្ទាល់ខ្លួន</a></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">ចាកចេញ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <div class="container-fluid p-4">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.getAttribute('data-bs-theme') === 'light') {
+                html.setAttribute('data-bs-theme', 'dark');
+                icon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+            } else {
+                html.setAttribute('data-bs-theme', 'light');
+                icon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+            }
+        }
+    </script>
+</body>
+</html>

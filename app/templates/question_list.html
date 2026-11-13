@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block page_title %}គ្រប់គ្រងសំណួរ{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">📚 បញ្ជីសំណួររបស់អ្នក</h4>
+    <div>
+        <a href="{% url 'import_questions' %}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-upload"></i> Import សំណួរ
+        </a>
+        <a href="{% url 'add_question' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> បញ្ចូលសំណួរថ្មី
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>មុខវិជ្ជា</th>
+                        <th>សំណួរ</th>
+                        <th>ជម្រើស A</th>
+                        <th>ជម្រើស B</th>
+                        <th>ជម្រើស C</th>
+                        <th>ជម្រើស D</th>
+                        <th>ចម្លើយ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in my_questions %}
+                    <tr>
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ q.subject.name }}</span></td>
+                        <td>{{ q.question_text }}</td>
+                        <td>{{ q.option_a }}</td>
+                        <td>{{ q.option_b }}</td>
+                        <td>{{ q.option_c }}</td>
+                        <td>{{ q.option_d }}</td>
+                        <td><span class="badge bg-success">{{ q.correct_answer }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            អ្នកមិនទាន់មានសំណួរផ្ទាល់ខ្លួនទេ។ សូមបញ្ចូលសំណួរថ្មី ឬ Import ពី Excel។
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ផ្នែកស្ថិតិរបស់គ្រូដទៃទៀត -->
+<div class="card shadow-sm border-0 mt-4">
+    <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+        <h5 class="fw-bold mb-0 text-secondary"><i class="bi bi-bar-chart"></i> ស្ថិតិសំណួររបស់គ្រូដទៃទៀត</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for sub in other_stats %}
+            <div class="col-md-3">
+                <div class="p-3 rounded-3 border text-center bg-light">
+                    <h6 class="fw-bold text-dark mb-1">{{ sub.name }}</h6>
+                    <h3 class="text-primary mb-0">{{ sub.total_questions }}</h3>
+                    <small class="text-muted">សំណួរ</small>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted">មិនទាន់មានសំណួរពីគ្រូផ្សេងទៀតទេ។</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

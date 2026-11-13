@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow border-0">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">📤 នាំចូលសំណួរតាមមុខវិជ្ជា (Import Excel/CSV)</h4>
+            </div>
+            <div class="card-body p-4">
+                
+                <div class="alert alert-info small">
+                    <strong>ទម្រង់ File ត្រូវរៀបចំ៖</strong><br>
+                    ជួរទី១៖ សំណួរ | ជម្រើស A | ជម្រើស B | ជម្រើស C | ជម្រើស D | ចម្លើយ (A/B/C/D)
+                    <hr>
+                    <a href="{% url 'download_template' %}" class="text-primary fw-bold">⬇️ ទាញយក File Template គំរូនៅទីនេះ</a>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- ប្រអប់ជ្រើសរើសមុខវិជ្ជា -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ជ្រើសរើសមុខវិជ្ជា</label>
+                        <select name="subject" class="form-select" required>
+                            <option value="">-- ជ្រើសរើសមុខវិជ្ជា --</option>
+                            {% for sub in subjects %}
+                                <option value="{{ sub.id }}">{{ sub.name }} ({{ sub.code }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">ប្រសិនបើមិនមានមុខវិជ្ជា សូមចូលទៅ <a href="{% url 'manage_subjects' %}">បង្កើតមុខវិជ្ជាថ្មី</a> ជាមុនសិន។</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ជ្រើសរើស File (.xlsx, .csv)</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx, .xls, .csv" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-secondary w-100">ចាប់ផ្តើម Import</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
